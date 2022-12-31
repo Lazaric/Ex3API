@@ -14,8 +14,7 @@ on("ready",function(){
 
 function checkInstall() {
 
-    doSendChat(scriptTitle, `version: ${version}<br>lastUpdated:${lastUpdated}
-    <br/>EX3 scripts by Corin: based on Exalted 3rd Edition Dice Roller by Mike Leavitt and exaltScript by Pinmissile<br/>For instructions, type <code>!exr help</code>`);
+doSendChat(scriptTitle, `version:  ${github} ${version}<br>lastUpdated:${lastUpdated}<br/>EX3 scripts by Corin: based on Exalted 3rd Edition Dice Roller by Mike Leavitt and exaltScript by Pinmissile<br/>For instructions, type <code>!exr help<br/></code>`);
 
     if( ! state.hasOwnProperty(scriptTitle) || state.exRoller.version != version) {
         state.exRoller = {
