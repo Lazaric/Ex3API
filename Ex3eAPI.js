@@ -6,6 +6,18 @@ const lastUpdated = "2022-12-30";
 const authors = "Mike Leavitt, Corin Maslin, Pinmissile";
 const functionHeader = " #~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~";
 
+//API ScriptAuthor: Mike Leavitt
+//Version: 0.7
+//Last Modified: 2017 - 07 - 16
+//Code: exaltScript
+// https://github.com/Roll20/roll20-api-scripts/tree/master/EX3Dice#readme
+
+//API ScriptAuthor: Pinmissile
+//Version: 0.7
+//Last Modified: 2017 - 07 - 16
+//Code: exaltScript
+// https://github.com/Roll20/roll20-api-scripts/tree/master/exaltScript
+
 on("ready",function(){
     checkInstall();
     doLog("exaltScript ready");
@@ -43,13 +55,10 @@ doSendChat(scriptTitle, `version:  ${github} ${version}<br>lastUpdated:${lastUpd
 
 //#region CONSTANTS
 //#region PLAYER CHARACTER IDS
-    const darylCharacterId = "-MBu5Fp7Dy-9R8p-vTaR";
-    const peteCharacterId = "-MBu2e2s4tC_M4iwWuJA";
-    // ReSharper disable once StringLiteralTypo
-    const maxCharacterId = "-M6FQ6CjddAMS2MGO-Ca";
-    // ReSharper disable once StringLiteralTypo
-    const paulNCharacterId = "-MBu5bEBnFfbtl6uc6_p";
-    // ReSharper disable once StringLiteralTypo
+const darylCharacterId = "-MBu5Fp7Dy-9R8p-vTaR";
+const peteCharacterId = "-MBu2e2s4tC_M4iwWuJA";
+const maxCharacterId = "-M6FQ6CjddAMS2MGO-Ca";
+const paulNCharacterId = "-MBu5bEBnFfbtl6uc6_p";
 
 const playerCharacterIdsArray = [darylCharacterId, peteCharacterId, maxCharacterId, paulNCharacterId];
 
@@ -57,6 +66,7 @@ const playerCharacterIdsArray = [darylCharacterId, peteCharacterId, maxCharacter
 
 //#region COMMAND WAKE WORDS
 const apiWake = "!exr";
+
 const cmdJoinBattle = "joinBattle";
 const cmdWitheringDamage = "wDamage";
 const cmdSpendInit = "initSpend";
