@@ -1,6 +1,6 @@
 const scriptTitle = "Ex3eAPI";
-const version = "3.7.3";
-const lastUpdated = "2022-02-07";
+const version = "3.7.4";
+const lastUpdated = "2022-02-22";
 const authors = "Mike Leavitt, Corin Maslin, Pinmissile";
 const github = "https://github.com/Lazaric/Ex3API";
 const functionHeader = " #~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~";
@@ -217,6 +217,10 @@ const weaponIconButtonStyle = "margin:2px; width:80px;text-align:center;font-siz
 
 const bgStyle = "margin-top:0px;padding-top:0px;font-weight:bold";
 const styleIndent = "margin-top:0px;padding-top:0px;padding-left:20px;margin-left:15px;font-weight:normal;";
+const styleIndentResultRed = "margin-top:0px;padding-top:0px;padding-left:20px;margin:0 15px 15px 15px;font-weight:bold;font-size:1.5em;border:2pt solid red;background-color:ghostwhite;color:red";
+const styleIndentResultGreen = "margin-top:0px;padding-top:0px;padding-left:20px;margin:0 15px 15px 15px;font-weight:bold;font-size:1.5em;border:3pt solid forestgreen;background-color:ghostwhite;color:forestgreen";
+
+
 //#endregion
 //#region INTERNAL CONSTANTS
 const diceRollMacro = "d10cf11cs0sd>7";
@@ -1119,6 +1123,7 @@ function exQCAttack(msg, command)
     var qcParry = parseInt(getAttribute(characterId, 'qc-parry')) || 0;
     var qcEvasion = parseInt(getAttribute(characterId, 'qc-evasion')) || 0;
     var qcSoak = parseInt(getAttribute(characterId, 'qc-soak')) || 0;
+
     doLog("exQCAttack Ab");
     doLog(targetId);
     const targetToken = getTokenFromId(targetId) || '';
@@ -1198,9 +1203,11 @@ function exQCAttack(msg, command)
 
         doLog("exQCAttack: battle group might offence bonus: " + battlegroupMightOffense);
         doLog("exQCAttack: battle group drill offence bonus: " + battlegroupDrillOffense);
-        doLog("exQCAttack: battle group size offence bonus: ");
+        doLog("exQCAttack: battle group size offence bonus: " + bgSize);
 
         dicePoolTotal += battlegroupMightOffense + battlegroupDrillOffense + bgSize;
+
+        doLog("dicePoolTotal: " + dicePoolTotal);
     }
     doLog("exQCAttack C");
     var rawDamage = 0;
@@ -1771,12 +1778,13 @@ function exWitheringDamageScript(msg, command)
     var targetBattlegroupHealth = 0;
     var targetBattlegroupPerfectMorale = 0;
     var targetLegendaryProtection = getTokenLegendaryProtect(targetToken);
+    var targetBattlegroupCommand = 0;
 
     if (isTargetBattleGroup == 1)
     {
         targetBattlegroupSize = parseInt(targetToken.get(bar2Value)) || 0;
         targetBattlegroupMagnitude = parseInt(targetToken.get(bar3Value)) || 0;
-        //		var targetBattlegroupCommand = parseInt(getCharacterAttributeFromTokenId(TargetToken.id,'battlegroup-command')) || 0;
+        targetBattlegroupCommand = parseInt(getCharacterAttributeFromTokenId(targetToken.id,'battlegroup-command')) || 0;
         targetBattlegroupHealth = parseInt(getCharacterAttributeFromTokenId(targetToken.id, 'battlegroup-health-levels')) || 0;
         targetBattlegroupPerfectMorale = parseInt(getCharacterAttributeFromTokenId(targetToken.id, 'battlegroup-perfect-morale')) || 0;
 
@@ -1848,11 +1856,8 @@ function exWitheringDamageScript(msg, command)
                 var successes = result.total + witheringAutomaticSuccesses + 1;
 
 
-                // if [isTargetBattlegroup]==1
                 if (isTargetBattleGroup == 1)
                 {
-                    //details += "<br/>targetBattlegroupMagnitude:" + targetBattlegroupMagnitude;
-                    // [newTargetBattlegroupMagnitude] = [targetBattlegroupMagnitude]-[successes]
                     var newTargetBattlegroupMagnitude = targetBattlegroupMagnitude - successes;
 
                     // if [newTargetBattlegroupMagnitude] <= 0
@@ -1870,13 +1875,13 @@ function exWitheringDamageScript(msg, command)
                             //targetNeedsCommandRoll=1;
                             targetNeedsCommandRoll = 1;
                         }
-
                         details += "<br/>Command Roll Needed? " + targetNeedsCommandRoll;
                     }
 
-                    details += "<br/>Current Size:" + targetBattlegroupSize;
-                    details += "<br/>Current Magnitude:" + newTargetBattlegroupMagnitude;
+                    details += "<br/>New Size:" + targetBattlegroupSize;
+                    details += "<br/>New Magnitude:" + newTargetBattlegroupMagnitude;
                     // set [TargetToken].[bar3] = [targetBattlegroupHealth]+[targetBattlegroupSize]
+                    targetToken.set(bar2Value, targetBattlegroupSize);
                     targetToken.set(bar3Value, newTargetBattlegroupMagnitude);
                 }
                 // [initiativeBreak] =0
@@ -1975,7 +1980,31 @@ function exWitheringDamageScript(msg, command)
                 //TODO: Automatic command rolls
                 doNotify("Target Battlegroup needs rout check", "none");
 
-                //var commandDiceTotal  = targetBattlegroupCommand + targetBattlegroupDrillBonus;
+                var commandDiceTotal  = targetBattlegroupCommand + targetBattlegroupDrillBonus;
+
+                const targetCharacterId  = targetToken.get('represents');
+                const targetBattlegroupCommandDice = getCharacterAttributeFromTokenId(targetToken.id,'battlegroup-commanddicecommand');
+
+                var commandRoll = "qcRoll " + targetCharacterId + "|?{Command Roll Modifier|0,0|-8,-8|-7,-7|-6,-6|-5,-5|-4,-4|-3,-3|-2,-2|-1,-1|1,1|2,2|3,3|4,4|5,5|6,6|7,7|8,8|9,9|10,10|11,11|12,12|13,13|14,14|15,15|16,16|17,17|18,18|19,19|20,20}";
+                commandRoll += "|Battlegroup Command|" + commandDiceTotal + "||#" + targetBattlegroupCommandDice;
+
+                const buttonItems = [];
+                buttonItems.push(createChatIconButton("!exr " + commandRoll + " ", "🧙", "command roll", "Command Roll"));
+
+                const btnRow = _.reduce(buttonItems, function(memo, num) { return memo + num });
+                const player = getPlayerFromId(msg.playerid);
+          
+                const displayName = getNameFrom(targetToken);
+
+                   
+                let buttonTemplate = "/w " + player.get("displayname");
+                buttonTemplate += " &{template:exalted3e_Roll}";
+                buttonTemplate += " {{character-name=" + displayName + "}}";
+                buttonTemplate += " {{buttons=" + btnRow + "}}";
+
+                doSendChat(msg.who, buttonTemplate);
+
+
                 //var rollStr = '/roll ' + commandDiceTotal + diceRollMacro;
 
                 // var templateRoll ="&{template:exalted3e_Roll}";
@@ -4064,7 +4093,11 @@ function generateCharacterActionMenu(msg, command)
     // QC ATTACKS MENU
     if (showCombat === 1 && isQc)
     {
-        buttonItems.push("<h3" + charMenuHeaderStyle + ">Attacks (QC)</h3>");
+        if (isBattlegroup)
+            buttonItems.push("<h3" + charMenuHeaderStyle + ">Attacks (BG)</h3>");
+        else
+            buttonItems.push("<h3" + charMenuHeaderStyle + ">Attacks (QC)</h3>");
+
         doLog("make buttons: 4.1:");
         const qcWeaponItems = getAttribute(characterId, "qcWeaponScript");
         const wpnItemsArray = qcWeaponItems.split("~~~~");
@@ -4092,7 +4125,7 @@ function generateCharacterActionMenu(msg, command)
                 buttonItems.push(commandButton);
             });
         }
-        else
+        else // Battlegroup attack commands for the selected token
         {
             doLog("make buttons: 4.5:");
             // ReSharper disable UseOfImplicitGlobalInFunctionScope
@@ -4123,12 +4156,12 @@ function generateCharacterActionMenu(msg, command)
                 doLog("make buttons: 4.7:");
                 doLog("weaponitem");
                 doLog(weaponItem);
-                const itemValues = weaponItem.split(sep);
-                const attackName = itemValues[0];
+                const itemValues = weaponItem.split(sep) ;
+                const attackName = itemValues[0] + " (BG)";
                 const attackDice = (parseInt(itemValues[1]) || 0) + bgSize + bgMight;
                 const attackDamage = (parseInt(itemValues[2]) || 0) + bgSize + bgMight;
                 const diceCommand = itemValues[3];
-                const commandActionItem = "!exr qcAttack " + characterId + sep + poolModifierSelector + sep + "Withering " + attackName + sep + attackDice + sep + attackDamage + sep + "B" + sep + "#" + diceCommand;
+                const commandActionItem = "!exr qcAttack " + characterId + sep + poolModifierSelector + sep + "Withering (BG)" + attackName + sep + attackDice + sep + attackDamage + sep + "B" + sep + "#" + diceCommand;
                 doLog("make buttons: 4.8:");
                 //|Withering @{repqcattackname} Attack|@{repqcattackdice}+@{battlegroup-might}+@{battlegroup-size}|(@{repqcattackdamage}+@{battlegroup-might}+@{battlegroup-size})|B|#@{repqcattackdicecommand}">B</button>
                 const commandButton = createChatButton(commandActionItem, "👹" + attackName);
@@ -4244,12 +4277,7 @@ function generateCharacterActionMenu(msg, command)
 
     doLog("make buttons: 8:" + showTokenActions);
     // TOKEN ACTIONS (NOT USED?)
-    if (showTokenActions === 1)
-    {
-        buttonItems.push("<h3" + charMenuHeaderStyle + ">Token actions</h3>");
-        buttonItems.push(createChatIconButton("!exr " + cmdJoinBattle + " " + targetTokenId + sep + "0" + sep + "0", "🔪", "token", "Join Battle Roll"));
-        buttonItems.push(createChatIconButton("!exr " + cmdEssenceSpendToken + " " + essenceSpendTokenParameters, "🀄️", "token", "Spend Essence"));
-    }
+    
 
     doLog("make buttons: 8:" + showNavalActions);
     // NAVAL ACTIONS
@@ -4277,7 +4305,7 @@ function generateCharacterActionMenu(msg, command)
     }
 
     doLog("make buttons: 9:");
-    // ReSharper disable once UseOfImplicitGlobalInFunctionScope
+    
     const btnRow = _.reduce(buttonItems, function (memo, num) { return memo + num });
     const player = getPlayerFromId(msg.playerid);
 
@@ -6364,11 +6392,19 @@ function doAttackCalculation(selectedTokenId, targetTokenId, successes, rawDamag
     details += "</p>";
 
     details += "<p class='attr' style='" + bgStyle + "'>Raw Threshold Successes";
-    const rawParryDesc = rawParryHit ? "hit" : "miss";
-    const rawEvasionDesc = rawEvasionHit ? "hit" : "miss";
+    const rawParryDesc = rawParryHit ? " HIT " : "miss";
+    const rawEvasionDesc = rawEvasionHit ? " HIT " : "miss";
 
-    details += detailSpan(styleIndent, " : Parry (" + rawParryDesc + ")", rawAttackParry);
-    details += detailSpan(styleIndent, " : Evasion (" + rawEvasionDesc + ")", rawAttackEvasion);
+    if (rawParryHit)
+        details += detailSpan(styleIndentResultGreen, " : Parry (" + rawParryDesc + ")", rawAttackParry);
+    else
+        details += detailSpan(styleIndentResultRed, " : Parry (" + rawParryDesc + ")", rawAttackParry);
+
+    if (rawEvasionHit)
+        details += detailSpan(styleIndentResultGreen, " : Evasion (" + rawEvasionDesc + ")", rawAttackEvasion);
+    else
+        details += detailSpan(styleIndentResultRed, " : Evasion (" + rawEvasionDesc + ")", rawAttackEvasion);
+
     details += "</p>";
 
 
@@ -6376,13 +6412,23 @@ function doAttackCalculation(selectedTokenId, targetTokenId, successes, rawDamag
     details += detailSpan(bgStyle, "Soak", targetTotalSoak);
     details += "</p>";
 
+    const dmgParry = (rawAttackParry + rawDamage) - targetTotalSoak;
     details += "<p class='attr' style='" + bgStyle + "'>Base Raw Damage (Threshold + Raw Damage) - Soak";
-    details += detailSpan(styleIndent, " : Parry", (rawAttackParry + rawDamage) - targetTotalSoak);
-    details += detailSpan(styleIndent, " : Evasion", (rawAttackEvasion + rawDamage) - targetTotalSoak);
+
+    if (rawParryHit)
+        details += detailSpan(styleIndentResultGreen, " : vs Parry", dmgParry);
+    else
+        details += detailSpan(styleIndentResultRed, " : vs Parry", dmgParry);
+
+    if (rawEvasionHit)
+        details += detailSpan(styleIndentResultGreen, " : vs Evasion", (rawAttackEvasion + rawDamage) - targetTotalSoak);
+    else
+        details += detailSpan(styleIndentResultRed, " : vs Evasion", (rawAttackEvasion + rawDamage) - targetTotalSoak);
+
     details += "</p>";
 
     templateRoll += " {{details=" + details + "}}";
-    templateRoll += "{{buttons=" + generateBGButtonRow(selectedTokenId, targetToken, successes, rawDamage, attackName) + "}}";
+    templateRoll += "{{buttons=" + generateBGButtonRow(selectedTokenId, targetToken, successes, dmgParry, attackName ) + "}}";
 
     doSendChat(who, templateRoll);
 }
