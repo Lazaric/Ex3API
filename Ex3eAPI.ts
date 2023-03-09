@@ -1,6 +1,6 @@
 const scriptTitle = "Ex3eAPI";
-const version = "3.7.4";
-const lastUpdated = "2022-02-22";
+const version = "3.7.6";
+const lastUpdated = "2022-03-05";
 const authors = "Mike Leavitt, Corin Maslin, Pinmissile";
 const github = "https://github.com/Lazaric/Ex3API";
 const functionHeader = " #~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~";
@@ -1313,12 +1313,12 @@ function exSkillCheckCharSheet(msg, command)
     const diceModifier = parseInt(params[3]) || 0;
     var abilityFullName = params[4] || "";
 
-    const mobilityPenalty = parseInt(getAttribute(characterId, attrArmourMobility)) || 0;
+    // const mobilityPenalty = parseInt(getAttribute(characterId, attrArmourMobility)) || 0;
 
     if (abilityFullName == "")
         abilityFullName = abilityName;
 
-    skillCheck(msg, player, character, characterId, attributeName, abilityName, abilityFullName, diceModifier, whisperMode, mobilityPenalty, null);
+    skillCheck(msg, player, character, characterId, attributeName, abilityName, abilityFullName, diceModifier, whisperMode, 0, null);
 };
 // W or D button on non qc weapons list on sheet
 function exWeaponAttackScriptCharacter(msg, command, attributeName)
@@ -5517,6 +5517,7 @@ function getCharacterStats(targetToken, who)
     const targetWoundPenalty = parseInt(targetToken.get(bar3Value)) || 0;
     const miscPenalty = parseInt(statusGetValue(targetToken, statusTempMiscPenalty)) || 0;
 
+
     const targetNaturalSoak = parseInt(getCharacterAttributeFromTokenId(targetToken.id, 'naturalsoak')) || 0;
 
     const targetTotalSoak = targetStamina + targetNaturalSoak + targetArmourSoak; // @{stamina}+@{naturalsoak}+@{armorsoak}
@@ -5543,6 +5544,9 @@ function getCharacterStats(targetToken, who)
 
     if (isTargetBattleGroup == 1)
     {
+        const targetBattlegroupSize = parseInt(targetToken.get(bar2Value)) || 0;
+        const targetBattlegroupMagnitude = parseInt(targetToken.get(bar3Value)) || 0;
+
         if (targetBattleGroupDrill == "Poor")
         {
             currentParry -= 1;
@@ -5583,7 +5587,7 @@ function getCharacterStats(targetToken, who)
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Parry [" + targetParry + "]</span><br/>";
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Evasion [" + evasionWithoutSpecial + "]</span><br/>";
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Onslaught Inflicted [" + onslaughtStatus + "]</span><br/>";
-    bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Onslaught Protection [" + onslaughtProtect + "]</span><br/>";
+    bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Onslaught Protection1 [" + onslaughtProtect + "]</span><br/>";
 
     bgInfo = bgInfo + "<span class='attr' " + bgEmphasis + ">Current Parry [" + currentParry + "]</span><br/>";
     bgInfo = bgInfo + "<span class='attr' " + bgEmphasis + ">Current Evasion [" + currentEvasion + "]</span><br/>";
@@ -5639,12 +5643,7 @@ function getQCStats(targetToken, who)
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Evasion [" + qcEvasion + "]</span><br/>";
 
     bgInfo = bgInfo + "<span class='attr' " + bgEmphasis + ">Onslaught Status [" + onslaughtStatus + "]</span><br/>";
-    bgInfo = bgInfo +
-        "<span class='attr' " +
-        bgEmphasis +
-        ">Onslaught Protection [" +
-        onslaughtProtect +
-        "]</span><br/>";
+    bgInfo = bgInfo + "<span class='attr' " + bgEmphasis + ">Onslaught Protection2 [" + onslaughtProtect + "]</span><br/>";
 
     bgInfo = bgInfo + "<span class='attr' " + bgEmphasis + ">Misc Penalty [" + miscPenalty + "]</span><br/>";
 
@@ -5774,7 +5773,7 @@ function getBgStats(targetToken, who)
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Command Dice [" + targetBattlegroupCommand + "]</span><br/>";
 
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Onslaught Inflicted [" + onslaughtPenalty + "]</span><br/>";
-    bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Onslaught Protection [" + onslaughtProtect + "]</span><br/>";
+    bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Onslaught Protection3 [" + onslaughtProtect + "]</span><br/>";
 
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Drill Offense [" + battlegroupDrillOffense + "]</span><br/>";
     bgInfo = bgInfo + "<span class='attr' " + bgStyle + ">Might Offense [" + battlegroupMightOffense + "]</span><br/>";
@@ -6314,7 +6313,7 @@ function doAttackCalculation(selectedTokenId, targetTokenId, successes, rawDamag
         onslaughtStatus += selectedBattleGroupSize;
         statusSetValue(targetToken, statusOnslaught, onslaughtStatus);
     }
-    if (isSelectedBattleGroup == 1 && isTargetBattleGroup == 0 && targetOnslaughtProtect > 0 && (selectedBattleGroupSize >= (targetOnslaughtProtect + 2)))
+    if (isSelectedBattleGroup == 1 && isTargetBattleGroup == 0 && targetOnslaughtProtect > 0)
     {
         onslaughtStatus += Math.max(selectedBattleGroupSize - targetOnslaughtProtect, 0);
         statusSetValue(targetToken, statusOnslaught, onslaughtStatus);
@@ -6382,7 +6381,7 @@ function doAttackCalculation(selectedTokenId, targetTokenId, successes, rawDamag
         details += detailSpan(bgStyle, "Battlegroup size", selectedBattleGroupSize);
 
     if (targetOnslaughtProtect > 0)
-        details += detailSpan(bgStyle, "Onslaught Protection", targetOnslaughtProtect);
+        details += detailSpan(bgStyle, "Onslaught Protection4", targetOnslaughtProtect);
 
     details += detailSpan(bgStyle, "Onslaught", "-" + onslaughtStatus);
 
