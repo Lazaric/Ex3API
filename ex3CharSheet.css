@@ -30,7 +30,6 @@
     -webkit-flex-direction: row;
     flex-direction: column;
     counter-reset: charmscounter;
-    
 }
 .charsheet textarea {
     border: 1pt solid darkgray;
