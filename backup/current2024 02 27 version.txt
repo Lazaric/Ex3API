@@ -1,6 +1,6 @@
 const scriptTitle = "Ex3eAPI";
-const version = "3.7.7";
-const lastUpdated = "2024-02-27";
+const version = "3.7.6";
+const lastUpdated = "2022-03-05";
 const authors = "Mike Leavitt, Corin Maslin, Pinmissile";
 const github = "https://github.com/Lazaric/Ex3API";
 const functionHeader = " #~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~#~";
@@ -44,7 +44,7 @@ function checkInstall()
                 doDirectAnimaIncrease: true,
                 debugMode: true,
                 doAddMotesEndTurn: true,
-                playerMotesRegen: 5,
+                playerMotesRegen: 9,
                 npcMotesRegen: 5
             }
         };
@@ -57,9 +57,7 @@ function checkInstall()
 
 //#region CONSTANTS
 //#region PLAYER CHARACTER IDS
-const darylCharacterIdSen = "-MBu5Fp7Dy-9R8p-vTaR";
-
-const darylCharacterId = "-NqdNEpNOMmx0rWKXT_C";
+const darylCharacterId = "-MBu5Fp7Dy-9R8p-vTaR";
 const peteCharacterId = "-MBu2e2s4tC_M4iwWuJA";
 // ReSharper disable once StringLiteralTypo
 const maxCharacterId = "-M6FQ6CjddAMS2MGO-Ca";
@@ -5253,6 +5251,7 @@ function doDisplayOptions()
     state.playerMotesRegen = parseInt(state.playerMotesRegen) || 5;
     state.npcMotesRegen = parseInt(state.npcMotesRegen) || 5;
 
+    const playerRegenColor9 = (parseInt(state.playerMotesRegen) == 9) ? colourGreen : colourRed;
     const playerRegenColor5 = (parseInt(state.playerMotesRegen) == 5) ? colourGreen : colourRed;
     const playerRegenColor2 = (parseInt(state.playerMotesRegen) == 2) ? colourGreen : colourRed;
 
@@ -5269,6 +5268,7 @@ function doDisplayOptions()
     buttonItems.push("<a href='!exr " + cmdSettings + " " + settingMotesIncrease + "' style='background-color:" + motesIncreaseColor + "; " + chatButtonStyle + "'>End Turn Motes</a>");
     buttonItems.push("<a href='!exr " + cmdSettings + " " + settingDebugMode + "' style='background-color:" + debugModeColor + "; " + chatButtonStyle + "'>Debug Mode</a>");
 
+    buttonItems.push("<a href='!exr " + cmdSettings + " " + settingPlayerRegen + "|9' style='background-color:" + playerRegenColor9 + "; " + chatButtonStyle + "'>Player Regen: 9</a>");
     buttonItems.push("<a href='!exr " + cmdSettings + " " + settingPlayerRegen + "|5' style='background-color:" + playerRegenColor5 + "; " + chatButtonStyle + "'>Player Regen: 5</a>");
     buttonItems.push("<a href='!exr " + cmdSettings + " " + settingPlayerRegen + "|2' style='background-color:" + playerRegenColor2 + "; " + chatButtonStyle + "'>Player Regen: 2</a>");
     buttonItems.push("<a href='!exr " + cmdSettings + " " + settingNpcRegen + "' style='background-color:" + debugModeColor + "; " + chatButtonStyle + "'>NPC Regen:" + state.npcMotesRegen + "</a>");
